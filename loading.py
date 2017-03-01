@@ -36,9 +36,9 @@ class DataClass(object):
         self.h = h
         self.w = w
 
-        self.dirnames_and_labels = self.load_dirnames_and_labels()
+        self.load_dirnames_and_labels()
 
-        self.total_data_size = len(self.dirnames_and_labels)
+        self.total_data_size = len(list(self.dirnames_and_labels))
 
         self.batch_size = batch_size
         self.batch_cursor = 0              # pozicia batchu vramci chunku
@@ -47,12 +47,6 @@ class DataClass(object):
         self.chunk_cursor = 0           # pozicia chunku vramci datasetu
         assert self.batch_size <= self.chunk_size
         self.next_chunk()
-
-    @staticmethod
-    def load_labels(self, csv_name='stage1_labels.csv', path=''):
-        # labels from csv to 1-D pandas df
-        labels_df = pd.read_csv(csv_name, index_col=0)
-        return labels_df
 
     ## load folder name
     @staticmethod
@@ -63,13 +57,23 @@ class DataClass(object):
             dirnames.sort()
         return dirnames
 
+    @staticmethod
+    def load_labels(self, dirnames, csv_name='stage1_labels.csv', path=''):
+        # labels from csv to 1-D pandas df
+        labels_df = pd.read_csv(csv_name, index_col=0)
+        labels_df_selection = labels_df.loc[dirnames]
+        # TODO: there is a NaN value! CAREFUL
+        return labels_df_selection
+
     def load_dirnames_and_labels(self):
         self.dirnames = self.load_dirnames(self.path)
-        self.labels = self.load_labels(self.labels_path)
+        self.labels = self.load_labels(self.labels_path, self.dirnames)
 
         # sanity checks
         assert len(self.dirnames) == len(self.labels)
-        for dirname, label in self.dirnames, self.labels.index:
+        a = list(self.labels.index.values)
+        b = self.dirnames
+        for dirname, label in zip(self.dirnames, list(self.labels.index.values)):
             if label not in dirname:
                 logging.error("Some of the labels and directory names dont match. Check filenames.")
                 exit(1)
@@ -77,7 +81,7 @@ class DataClass(object):
 
         # zip
         labels_np = np.array(self.labels) # shape (n, 1)
-        self.dirnames_and_labels = zip(self.dirnames, labels_np)
+        self.dirnames_and_labels = list(zip(self.dirnames, labels_np))
 
 
     def shuffle(self):
@@ -98,19 +102,20 @@ class DataClass(object):
             # load labels
 
             for img_filename in os.listdir(os.path.join(self.path, dirname)):
-                dir_imgs = []
+                if 'slice_info' not in img_filename:
+                    dir_imgs = []
+                    print( os.path.join(self.path, dirname, img_filename) )
+                    img = cv2.imread(os.path.join(self.path, dirname, img_filename))
+                    img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+                    img = img.astype(float) / 255
 
-                img = cv2.imread(os.path.join(self.path, img_filename))
-                img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-                img = img.astype(float) / 255
+                    if img.shape != (self.h, self.w):
+                        logging.warning("Some images had different size and were resized to {} x {}.".format(self.w, self.h))
+                        img = cv2.resize(img, (self.w, self.h))
 
-                if img.shape != (self.h, self.w, 3):
-                    logging.warning("Some images had different size and were resized to {} x {}.".format(self.w, self.h))
-                    img = cv2.resize(img, (self.w, self.h))
-
-                #if self.data_use == 'train' and self.augm:
-                    # place for augmentations
-                dir_imgs.append(img)
+                    #if self.data_use == 'train' and self.augm:
+                        # place for augmentations
+                    dir_imgs.append(img)
 
             chunk_imgs.append(dir_imgs)
             chunk_labels.append(label)

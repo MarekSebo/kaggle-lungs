@@ -12,7 +12,7 @@ chunk_size = 1
 info_freq = 20
 augmentation = False
 learning_rate = 0.001
-image_height, image_width, channels = (512, 512, 3)
+image_height, image_width, channels = (512, 512, 3) # channels =1 ?
 
 models_dir = 'models'
 data_dir = 'data'
@@ -26,7 +26,7 @@ if not os.path.exists(models_dir):
 
 url = os.getcwd()
 print(os.path.join(url, data_dir))
-train_data = DataClass(os.path.join(url, data_dir, '/'), os.path.join(url, data_dir, '/'), batch_size, chunk_size,
+train_data = DataClass(os.path.join(url, data_dir), os.path.join(url, labels_dir), batch_size, chunk_size,
                        image_height, image_width, augm=augmentation, data_use='train')
 
 
