@@ -77,11 +77,12 @@ class DataClass(object):
             if label not in dirname:
                 logging.error("Some of the labels and directory names dont match. Check filenames.")
                 exit(1)
-                # TODO: do the dirname-label pairs match?
+                # TODO: ONE of the dirnames is missing => label is NaN. REMOVE IT!
 
         # zip
         labels_np = np.array(self.labels) # shape (n, 1)
         self.dirnames_and_labels = list(zip(self.dirnames, labels_np))
+        print(self.dirnames_and_labels)
 
 
     def shuffle(self):
