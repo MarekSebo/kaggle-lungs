@@ -67,15 +67,15 @@ class DataClass(object):
 
     def load_dirnames_and_labels(self):
         self.dirnames = self.load_dirnames(self.path)
+
         self.labels = self.load_labels(self.labels_path, self.dirnames)
 
         # sanity checks
         assert len(self.dirnames) == len(self.labels)
-        a = list(self.labels.index.values)
-        b = self.dirnames
-        for dirname, label in zip(self.dirnames, list(self.labels.index.values)):
-            if label not in dirname:
-                logging.error("Some of the labels and directory names dont match. Check filenames.")
+        label_keys = self.labels.index.values
+        for dirname, label_key in zip(self.dirnames, label_keys):
+            if label_key not in dirname:
+                logging.error("Some of the labels keys and directory names dont match. Check filenames.")
                 exit(1)
                 # TODO: ONE of the dirnames is missing => label is NaN. REMOVE IT!
 

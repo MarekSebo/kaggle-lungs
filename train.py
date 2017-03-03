@@ -29,6 +29,8 @@ print(os.path.join(url, data_dir))
 train_data = DataClass(os.path.join(url, data_dir), os.path.join(url, labels_dir), batch_size, chunk_size,
                        image_height, image_width, augm=augmentation, data_use='train')
 
+print('the konec')
+
 
 
 
